@@ -1,0 +1,16 @@
+# Copie para .env e preencha. Não versionar .env.
+# NODE_ENV=development|production
+# HOST=0.0.0.0 (bind da API)
+# APP_PORT=porta em que a API escuta dentro do container
+# HOST_PORT=porta no host para acessar a API
+# REDIS_URL: com docker compose use redis://redis:6379; com app no host use redis://localhost:6379
+# REDIS_HOST_PORT=porta no host para o Redis
+# REDIS_CONTAINER_PORT=porta do Redis dentro do container
+
+NODE_ENV=
+HOST=
+APP_PORT=
+HOST_PORT=
+REDIS_URL=
+REDIS_HOST_PORT=
+REDIS_CONTAINER_PORT=

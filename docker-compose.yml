@@ -1,0 +1,39 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        BUILD_APP_PORT: ${APP_PORT}
+    container_name: redis-connection-app
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=${NODE_ENV}
+      - PORT=${APP_PORT}
+      - HOST=${HOST}
+      - REDIS_URL=${REDIS_URL}
+    ports:
+      - '${HOST_PORT}:${APP_PORT}'
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  redis:
+    image: redis:alpine
+    container_name: redis-connection-redis
+    restart: unless-stopped
+    ports:
+      - '${REDIS_HOST_PORT}:${REDIS_CONTAINER_PORT}'
+    command: ['redis-server', '--appendonly', 'yes']
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  redis_data:
