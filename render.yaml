@@ -1,0 +1,27 @@
+# Render Blueprint: Web Service + Redis (Key Value)
+# Conecte o repositório no Render e use "New Blueprint Instance" apontando para este arquivo.
+# Documentação: https://render.com/docs/blueprint-spec
+
+services:
+  - type: web
+    name: redis-connection-api
+    runtime: node
+    region: oregon
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: redis-connection-cache
+          property: connectionString
+    # PORT é definido automaticamente pelo Render; não precisa declarar.
+
+  - type: keyvalue
+    name: redis-connection-cache
+    region: oregon
+    plan: free
+    ipAllowList: [] # só conexões internas (da API no Render)
