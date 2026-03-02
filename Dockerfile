@@ -1,31 +1,55 @@
-# Build
-# Obtain variables from env file
+# === Build stage ===
 FROM node:24-alpine AS builder
-# Set the working directory
+
 WORKDIR /app
 
-# Copy the package.json and package-lock.json files
+# Dependências (dev + prod) para build
 COPY package.json package-lock.json* ./
-# Install the dependencies
 RUN npm install
 
+# Build TypeScript
 COPY tsconfig.json ./
 COPY src ./src
 RUN npm run build
 
-# Production
+# === Runtime (app + redis) ===
 FROM node:24-alpine
-# Set the working directory
+
 WORKDIR /app
 
-# Copy the package.json and package-lock.json files
+# Instala Redis server e cliente
+RUN apk add --no-cache redis redis-cli
+
+# Copia apenas o necessário
 COPY package.json package-lock.json* ./
 RUN npm install --omit=dev
 
 COPY --from=builder /app/dist ./dist
 
-USER node
-ARG BUILD_APP_PORT
-EXPOSE ${BUILD_APP_PORT}
+# Variáveis padrão (Render vai sobrepor PORT automaticamente)
+ENV NODE_ENV=production
+ENV REDIS_URL=redis://127.0.0.1:6379
 
-CMD ["node", "dist/index.js"]
+# Script de entrada: sobe Redis e depois o app
+COPY <<'EOF' /app/entrypoint.sh
+#!/usr/bin/env sh
+set -e
+
+# Inicia Redis em background
+redis-server --appendonly yes &
+
+# Espera Redis responder
+echo "Aguardando Redis..."
+until redis-cli ping >/dev/null 2>&1; do
+  sleep 0.5
+done
+echo "Redis OK."
+
+# Sobe a API
+exec node dist/index.js
+EOF
+
+RUN chmod +x /app/entrypoint.sh
+
+EXPOSE 3000
+CMD ["/app/entrypoint.sh"]
