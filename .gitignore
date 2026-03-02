@@ -8,3 +8,4 @@ yarn-error.log*
 scripts
 .vscode
 redis-connection.tar
+Dockerfile_local

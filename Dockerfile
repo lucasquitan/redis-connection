@@ -18,7 +18,7 @@ FROM node:24-alpine
 WORKDIR /app
 
 # Instala Redis server e cliente
-RUN apk add --no-cache redis redis-cli
+RUN apk add --no-cache redis
 
 # Copia apenas o necessário
 COPY package.json package-lock.json* ./
